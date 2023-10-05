@@ -1,23 +1,23 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-int findLastPoint(int points[], int n) {
-    int i, j;
-    for (i = 0; i < n - 1; i++) {
-        if (points[i] == 0) continue;
-        for (j = i + 1; j < n; j++) {
-            if (points[j] == 0) continue;
-            points[i] += points[j];
-            points[j] = 0;
+typedef struct Point {
+    int mass;
+    int index;
+} Point;
+
+int findSmallestMassIndex(Point points[], int n) {
+    int smallestMass = points[0].mass;
+    int smallestMassIndex = 0;
+
+    for (int i = 1; i < n; i++) {
+        if (points[i].mass < smallestMass) {
+            smallestMass = points[i].mass;
+            smallestMassIndex = i;
         }
     }
 
-    for (i = 0; i < n; i++) {
-        if (points[i] != 0) {
-            return points[i];
-        }
-    }
-
-    return -1;
+    return smallestMassIndex;
 }
 
 int main() {
@@ -25,14 +25,42 @@ int main() {
     printf("Enter the number of points: ");
     scanf("%d", &n);
 
-    int points[n];
+    Point* points = (Point*)malloc(n * sizeof(Point));
+
     printf("Enter the masses of the points:\n");
     for (int i = 0; i < n; i++) {
-        scanf("%d", &points[i]);
+        scanf("%d", &points[i].mass);
+        points[i].index = i + 1;
     }
 
-    int lastPoint = findLastPoint(points, n);
-    printf("The value of the last remaining point: %d\n", lastPoint);
+    while (n > 1) {
+        int smallestMassIndex = findSmallestMassIndex(points, n);
+        int nearestIndex = (smallestMassIndex == 0) ? 1 : 0;
+        int smallestMass = points[smallestMassIndex].mass;
+
+        for (int i = 0; i < n; i++) {
+            if (i != smallestMassIndex) {
+                int currentMass = points[i].mass;
+                if (abs(i - smallestMassIndex) < abs(nearestIndex - smallestMassIndex) ||
+                    (abs(i - smallestMassIndex) == abs(nearestIndex - smallestMassIndex) && currentMass > points[nearestIndex].mass)) {
+                    nearestIndex = i;
+                }
+            }
+        }
+
+        points[nearestIndex].mass += smallestMass;
+        points[smallestMassIndex].mass = 0;
+
+        for (int i = smallestMassIndex; i < n - 1; i++) {
+            points[i] = points[i + 1];
+        }
+
+        n--;
+    }
+
+    printf("The last remaining point has a mass of %d and an index of %d\n", points[0].mass, points[0].index);
+
+    free(points);
 
     return 0;
 }
