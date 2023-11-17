@@ -1,27 +1,29 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
     if (argc != 3) {
-        printf("Usage of program:\n\n%s <environment_variable_name> <value>\n", argv[0]);
+        printf("Usage: %s <variable_name> <variable_value>\n", argv[0]);
         return 1;
     }
 
-    char *name = argv[1];
-    char *value = argv[2];
+    const char *variable_name = argv[1];
+    const char *variable_value = argv[2];
 
-    int result = setenv(name, value, 1);
-    if (result == -1) {
-        printf("Error setting the value of the environment variable.\n");
+    if (setenv(variable_name, variable_value, 1) == 0) {
+        printf("Variable '%s' is set to '%s'\n", variable_name, variable_value);
+    } else {
+        perror("Error setting environment variable");
         return 1;
     }
 
-    char *get_value = getenv(name);
-    if (get_value == NULL) {
-        printf("Environment variable with name '%s' does not exist.\n", name);
-        return 1;
+    char *environment_value = getenv(variable_name);
+    if (environment_value != NULL) {
+        printf("Variable '%s' is currently set to '%s'\n", variable_name, environment_value);
+    } else {
+        printf("Variable '%s' is not found in the environment.\n", variable_name);
     }
 
-    printf("Environment variable '%s': %s\n", name, get_value);
     return 0;
 }
